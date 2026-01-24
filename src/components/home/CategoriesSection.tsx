@@ -1,7 +1,10 @@
-import { categories } from '@/data/products';
+import { useDbCategories } from '@/hooks/useDbProducts';
 import CategoryCard from './CategoryCard';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const CategoriesSection = () => {
+  const { data: categories = [], isLoading } = useDbCategories();
+
   return (
     <section className="py-24 lg:py-32">
       <div className="luxury-container">
@@ -15,18 +18,28 @@ const CategoriesSection = () => {
         </div>
 
         {/* Categories Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {categories.map((category, index) => (
-            <CategoryCard
-              key={category.id}
-              id={category.id}
-              name={category.name}
-              description={category.description}
-              image={category.image}
-              index={index}
-            />
-          ))}
-        </div>
+        {isLoading ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="space-y-4">
+                <Skeleton className="aspect-[4/5] w-full" />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {categories.map((category, index) => (
+              <CategoryCard
+                key={category.id}
+                id={category.slug}
+                name={category.name}
+                description={category.description || ''}
+                image={category.image_url || '/placeholder.svg'}
+                index={index}
+              />
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );

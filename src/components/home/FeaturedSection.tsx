@@ -1,9 +1,19 @@
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { products } from '@/data/products';
+import { useFeaturedProducts } from '@/hooks/useDbProducts';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const FeaturedSection = () => {
-  const featuredProducts = products.filter(p => p.category === 'luxury-perfumes').slice(0, 3);
+  const { data: featuredProducts = [], isLoading } = useFeaturedProducts();
+
+  const formatNotes = (notes: { top?: string[]; middle?: string[]; base?: string[] } | null) => {
+    if (!notes) return null;
+    const allNotes = [
+      ...(notes.top || []),
+      ...(notes.middle || []),
+    ].slice(0, 2);
+    return allNotes.join(', ');
+  };
 
   return (
     <section className="py-24 lg:py-32 bg-card/50">
@@ -18,33 +28,54 @@ const FeaturedSection = () => {
         </div>
 
         {/* Featured Products */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12">
-          {featuredProducts.map((product, index) => (
-            <Link
-              key={product.id}
-              to={`/product/${product.id}`}
-              className="group animate-fade-up"
-              style={{ animationDelay: `${0.1 + index * 0.1}s` }}
-            >
-              <div className="relative aspect-[3/4] overflow-hidden bg-secondary mb-6">
-                <img
-                  src={product.image}
-                  alt={product.name}
-                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-background/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+        {isLoading ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12">
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="space-y-6">
+                <Skeleton className="aspect-[3/4] w-full" />
+                <div className="text-center space-y-2">
+                  <Skeleton className="h-6 w-3/4 mx-auto" />
+                  <Skeleton className="h-4 w-1/2 mx-auto" />
+                  <Skeleton className="h-5 w-1/4 mx-auto" />
+                </div>
               </div>
-              
-              <div className="text-center space-y-2">
-                <h3 className="font-serif text-xl text-foreground group-hover:text-primary transition-colors">
-                  {product.name}
-                </h3>
-                <p className="text-sm text-muted-foreground">{product.notes?.split('|')[0]}</p>
-                <p className="text-lg text-primary font-medium">${product.price}</p>
-              </div>
-            </Link>
-          ))}
-        </div>
+            ))}
+          </div>
+        ) : featuredProducts.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12">
+            {featuredProducts.slice(0, 3).map((product, index) => (
+              <Link
+                key={product.id}
+                to={`/product/${product.id}`}
+                className="group animate-fade-up"
+                style={{ animationDelay: `${0.1 + index * 0.1}s` }}
+              >
+                <div className="relative aspect-[3/4] overflow-hidden bg-secondary mb-6">
+                  <img
+                    src={product.image_url || '/placeholder.svg'}
+                    alt={product.name}
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-background/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                </div>
+                
+                <div className="text-center space-y-2">
+                  <h3 className="font-serif text-xl text-foreground group-hover:text-primary transition-colors">
+                    {product.name}
+                  </h3>
+                  {formatNotes(product.fragrance_notes) && (
+                    <p className="text-sm text-muted-foreground">{formatNotes(product.fragrance_notes)}</p>
+                  )}
+                  <p className="text-lg text-primary font-medium">${product.price}</p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-12">
+            <p className="text-muted-foreground">Featured products coming soon.</p>
+          </div>
+        )}
 
         {/* CTA */}
         <div className="text-center mt-16">
