@@ -6,6 +6,14 @@ import { Skeleton } from '@/components/ui/skeleton';
 const FeaturedSection = () => {
   const { data: featuredProducts = [], isLoading } = useFeaturedProducts();
 
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+      maximumFractionDigits: 0,
+    }).format(price);
+  };
+
   const formatNotes = (notes: { top?: string[]; middle?: string[]; base?: string[] } | null) => {
     if (!notes) return null;
     const allNotes = [
@@ -66,7 +74,7 @@ const FeaturedSection = () => {
                   {formatNotes(product.fragrance_notes) && (
                     <p className="text-sm text-muted-foreground">{formatNotes(product.fragrance_notes)}</p>
                   )}
-                  <p className="text-lg text-primary font-medium">${product.price}</p>
+                  <p className="text-lg text-primary font-medium">{formatPrice(product.price)}</p>
                 </div>
               </Link>
             ))}

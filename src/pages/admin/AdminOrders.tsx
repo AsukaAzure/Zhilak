@@ -1,10 +1,12 @@
+import { useEffect } from 'react';
 import AdminLayout from './AdminLayout';
 import { Search, Eye } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
 import { useState } from 'react';
 import { useAdminOrders, useUpdateOrderStatus } from '@/hooks/useOrders';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
+import { useQueryClient } from '@tanstack/react-query';
 import {
   Select,
   SelectContent,
@@ -19,6 +21,7 @@ const statusColors = {
 };
 
 const AdminOrders = () => {
+  const queryClient = useQueryClient();
   const { data: orders, isLoading } = useAdminOrders();
   const updateOrderStatus = useUpdateOrderStatus();
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
@@ -32,6 +35,29 @@ const AdminOrders = () => {
     order.id.toLowerCase().includes(searchQuery.toLowerCase())
   ) || [];
 
+  // Real-time subscription for order updates
+  useEffect(() => {
+    const channel = supabase
+      .channel('admin-orders-realtime')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'orders',
+        },
+        () => {
+          // Invalidate and refetch orders when any change occurs
+          queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
+
   const handleStatusChange = async (orderId: string, newStatus: 'pending' | 'completed') => {
     try {
       await updateOrderStatus.mutateAsync({ orderId, status: newStatus });
@@ -42,20 +68,28 @@ const AdminOrders = () => {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
+    return new Date(dateString).toLocaleDateString('en-IN', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
     });
   };
 
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+      maximumFractionDigits: 0,
+    }).format(price);
+  };
+
   return (
     <AdminLayout>
-      <div className="space-y-8">
+      <div className="space-y-6 md:space-y-8">
         {/* Header */}
         <div>
-          <h1 className="font-serif text-3xl text-foreground">Orders</h1>
-          <p className="text-muted-foreground mt-1">View and manage customer orders</p>
+          <h1 className="font-serif text-2xl md:text-3xl text-foreground">Orders</h1>
+          <p className="text-muted-foreground mt-1 text-sm md:text-base">View and manage customer orders</p>
         </div>
 
         {/* Search */}
@@ -84,19 +118,19 @@ const AdminOrders = () => {
               {filteredOrders.map((order) => (
                 <div
                   key={order.id}
-                  className={`bg-card border border-border/50 p-6 space-y-4 hover:border-primary/30 transition-colors cursor-pointer ${
+                  className={`bg-card border border-border/50 p-4 md:p-6 space-y-3 md:space-y-4 hover:border-primary/30 transition-colors cursor-pointer ${
                     selectedOrderId === order.id ? 'border-primary/50' : ''
                   }`}
                   onClick={() => setSelectedOrderId(order.id)}
                 >
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                     <div>
                       <p className="font-medium text-foreground">
                         {order.id.slice(0, 8).toUpperCase()}
                       </p>
                       <p className="text-sm text-muted-foreground">{order.full_name}</p>
                     </div>
-                    <span className={`text-xs px-3 py-1 rounded-full ${statusColors[order.status]}`}>
+                    <span className={`text-xs px-3 py-1 rounded-full w-fit ${statusColors[order.status]}`}>
                       {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
                     </span>
                   </div>
@@ -104,7 +138,7 @@ const AdminOrders = () => {
                     <span className="text-muted-foreground">
                       {(order as any).order_items?.length || 0} item(s)
                     </span>
-                    <span className="text-primary font-medium">${order.total}</span>
+                    <span className="text-primary font-medium">{formatPrice(order.total)}</span>
                   </div>
                   <p className="text-xs text-muted-foreground">{formatDate(order.created_at)}</p>
                 </div>
@@ -114,8 +148,8 @@ const AdminOrders = () => {
             {/* Order Details */}
             <div className="lg:col-span-1">
               {selectedOrder ? (
-                <div className="sticky top-8 bg-card border border-border/50 p-6 space-y-6">
-                  <div className="flex items-center justify-between">
+                <div className="sticky top-8 bg-card border border-border/50 p-4 md:p-6 space-y-6">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <h3 className="font-serif text-xl text-foreground">Order Details</h3>
                     <Select
                       value={selectedOrder.status}
@@ -123,7 +157,7 @@ const AdminOrders = () => {
                         handleStatusChange(selectedOrder.id, value)
                       }
                     >
-                      <SelectTrigger className={`w-32 ${statusColors[selectedOrder.status]}`}>
+                      <SelectTrigger className={`w-full sm:w-32 ${statusColors[selectedOrder.status]}`}>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -152,7 +186,7 @@ const AdminOrders = () => {
                       <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">
                         Email
                       </p>
-                      <p className="text-sm text-foreground">{selectedOrder.email}</p>
+                      <p className="text-sm text-foreground break-all">{selectedOrder.email}</p>
                     </div>
                     <div>
                       <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">
@@ -181,7 +215,7 @@ const AdminOrders = () => {
                             {item.product_name} × {item.quantity}
                           </span>
                           <span className="text-foreground">
-                            ${(item.product_price * item.quantity).toFixed(2)}
+                            {formatPrice(item.product_price * item.quantity)}
                           </span>
                         </div>
                       ))}
@@ -193,20 +227,20 @@ const AdminOrders = () => {
                   {selectedOrder.discount && selectedOrder.discount > 0 && (
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">Subtotal</span>
-                      <span className="text-foreground">${selectedOrder.subtotal}</span>
+                      <span className="text-foreground">{formatPrice(selectedOrder.subtotal)}</span>
                     </div>
                   )}
 
                   {selectedOrder.discount && selectedOrder.discount > 0 && (
                     <div className="flex justify-between text-sm text-green-500">
                       <span>Discount</span>
-                      <span>-${selectedOrder.discount}</span>
+                      <span>-{formatPrice(selectedOrder.discount)}</span>
                     </div>
                   )}
 
                   <div className="flex justify-between">
                     <span className="text-foreground font-medium">Total</span>
-                    <span className="text-primary text-lg font-medium">${selectedOrder.total}</span>
+                    <span className="text-primary text-lg font-medium">{formatPrice(selectedOrder.total)}</span>
                   </div>
                 </div>
               ) : (

@@ -76,6 +76,14 @@ const ProductDetail = () => {
     navigate('/checkout');
   };
 
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+      maximumFractionDigits: 0,
+    }).format(price);
+  };
+
   const formatNotes = () => {
     if (!product.fragrance_notes) return null;
     const { top, middle, base } = product.fragrance_notes;
@@ -146,7 +154,7 @@ const ProductDetail = () => {
                   <h1 className="font-serif text-4xl md:text-5xl text-foreground">
                     {product.name}
                   </h1>
-                  <p className="text-3xl text-primary">${product.price}</p>
+                  <p className="text-3xl text-primary">{formatPrice(product.price)}</p>
                 </div>
 
                 {/* Availability */}

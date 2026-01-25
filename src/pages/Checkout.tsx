@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Trash2, Check, Tag, X } from 'lucide-react';
+import { ArrowLeft, Trash2, Check, Tag, X, Ticket } from 'lucide-react';
 import Layout from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,7 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/hooks/useAuth';
 import { useCreateOrder } from '@/hooks/useOrders';
-import { useValidateCoupon, useRecordCouponUsage } from '@/hooks/useCoupons';
+import { useValidateCoupon, useRecordCouponUsage, useCoupons } from '@/hooks/useCoupons';
 import { toast } from 'sonner';
 
 interface AppliedCoupon {
@@ -26,6 +26,7 @@ const Checkout = () => {
   const createOrder = useCreateOrder();
   const validateCoupon = useValidateCoupon();
   const recordCouponUsage = useRecordCouponUsage();
+  const { data: availableCoupons } = useCoupons();
   
   const [step, setStep] = useState<'cart' | 'details' | 'confirmation'>('cart');
   const [couponCode, setCouponCode] = useState('');
@@ -46,15 +47,16 @@ const Checkout = () => {
     }));
   };
 
-  const handleApplyCoupon = async () => {
-    if (!couponCode.trim()) {
+  const handleApplyCoupon = async (code?: string) => {
+    const couponToApply = code || couponCode.trim();
+    if (!couponToApply) {
       toast.error('Please enter a coupon code');
       return;
     }
 
     setIsApplyingCoupon(true);
     try {
-      const coupon = await validateCoupon.mutateAsync(couponCode.trim().toUpperCase());
+      const coupon = await validateCoupon.mutateAsync(couponToApply.toUpperCase());
       setAppliedCoupon({
         id: coupon.id,
         code: coupon.code,
@@ -149,6 +151,14 @@ const Checkout = () => {
     }
   };
 
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+      maximumFractionDigits: 0,
+    }).format(price);
+  };
+
   if (step === 'confirmation') {
     return (
       <Layout>
@@ -220,15 +230,15 @@ const Checkout = () => {
                   </Button>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12">
                   {/* Cart Items */}
-                  <div className="lg:col-span-2 space-y-6">
+                  <div className="lg:col-span-2 space-y-4 md:space-y-6">
                     {items.map(item => (
                       <div
                         key={item.product.id}
-                        className="flex gap-6 p-6 bg-card border border-border/50"
+                        className="flex flex-col sm:flex-row gap-4 sm:gap-6 p-4 sm:p-6 bg-card border border-border/50"
                       >
-                        <div className="w-24 h-32 bg-secondary shrink-0">
+                        <div className="w-full sm:w-24 h-40 sm:h-32 bg-secondary shrink-0">
                           <img
                             src={item.product.image}
                             alt={item.product.name}
@@ -239,18 +249,12 @@ const Checkout = () => {
                           <h3 className="font-serif text-lg text-foreground">
                             {item.product.name}
                           </h3>
-                          <p className="text-sm text-muted-foreground">
+                          <p className="text-sm text-muted-foreground line-clamp-2">
                             {item.product.description}
                           </p>
-                          <p className="text-primary">${item.product.price}</p>
+                          <p className="text-primary">{formatPrice(item.product.price)}</p>
                         </div>
-                        <div className="flex flex-col items-end justify-between">
-                          <button
-                            onClick={() => removeFromCart(item.product.id)}
-                            className="text-muted-foreground hover:text-destructive transition-colors"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
+                        <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-between">
                           <div className="flex items-center border border-border">
                             <button
                               onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
@@ -266,6 +270,12 @@ const Checkout = () => {
                               +
                             </button>
                           </div>
+                          <button
+                            onClick={() => removeFromCart(item.product.id)}
+                            className="text-muted-foreground hover:text-destructive transition-colors"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
                         </div>
                       </div>
                     ))}
@@ -273,7 +283,7 @@ const Checkout = () => {
 
                   {/* Order Summary */}
                   <div className="lg:col-span-1">
-                    <div className="sticky top-28 bg-card border border-border/50 p-8 space-y-6">
+                    <div className="sticky top-28 bg-card border border-border/50 p-6 md:p-8 space-y-6">
                       <h3 className="font-serif text-xl text-foreground">
                         Order Summary
                       </h3>
@@ -284,7 +294,7 @@ const Checkout = () => {
                               {item.product.name} × {item.quantity}
                             </span>
                             <span className="text-foreground">
-                              ${item.product.price * item.quantity}
+                              {formatPrice(item.product.price * item.quantity)}
                             </span>
                           </div>
                         ))}
@@ -307,7 +317,7 @@ const Checkout = () => {
                               <span className="text-xs text-muted-foreground">
                                 ({appliedCoupon.discount_type === 'percentage' 
                                   ? `${appliedCoupon.discount_value}% off`
-                                  : `$${appliedCoupon.discount_value} off`})
+                                  : `${formatPrice(appliedCoupon.discount_value)} off`})
                               </span>
                             </div>
                             <button
@@ -327,11 +337,38 @@ const Checkout = () => {
                             />
                             <Button
                               variant="luxuryOutline"
-                              onClick={handleApplyCoupon}
+                              onClick={() => handleApplyCoupon()}
                               disabled={isApplyingCoupon}
                             >
                               {isApplyingCoupon ? '...' : 'Apply'}
                             </Button>
+                          </div>
+                        )}
+
+                        {/* Available Coupons */}
+                        {!appliedCoupon && availableCoupons && availableCoupons.length > 0 && (
+                          <div className="space-y-2 pt-2">
+                            <p className="text-xs text-muted-foreground flex items-center gap-1">
+                              <Ticket className="w-3 h-3" />
+                              Available Coupons
+                            </p>
+                            <div className="space-y-2 max-h-32 overflow-y-auto">
+                              {availableCoupons.filter(c => c.is_active).map((coupon) => (
+                                <button
+                                  key={coupon.id}
+                                  onClick={() => handleApplyCoupon(coupon.code)}
+                                  disabled={isApplyingCoupon}
+                                  className="w-full flex items-center justify-between p-2 text-left text-sm border border-dashed border-primary/30 rounded hover:bg-primary/5 transition-colors"
+                                >
+                                  <span className="font-medium text-primary">{coupon.code}</span>
+                                  <span className="text-xs text-muted-foreground">
+                                    {coupon.discount_type === 'percentage'
+                                      ? `${coupon.discount_value}% off`
+                                      : `${formatPrice(coupon.discount_value)} off`}
+                                  </span>
+                                </button>
+                              ))}
+                            </div>
                           </div>
                         )}
                       </div>
@@ -339,12 +376,12 @@ const Checkout = () => {
                       <div className="luxury-divider !mx-0 !w-full" />
                       <div className="flex justify-between">
                         <span className="text-muted-foreground">Subtotal</span>
-                        <span className="text-foreground">${total}</span>
+                        <span className="text-foreground">{formatPrice(total)}</span>
                       </div>
                       {discount > 0 && (
                         <div className="flex justify-between text-primary">
                           <span>Discount</span>
-                          <span>-${discount}</span>
+                          <span>-{formatPrice(discount)}</span>
                         </div>
                       )}
                       <div className="flex justify-between">
@@ -354,7 +391,7 @@ const Checkout = () => {
                       <div className="luxury-divider !mx-0 !w-full" />
                       <div className="flex justify-between text-lg">
                         <span className="text-foreground">Total</span>
-                        <span className="text-primary font-medium">${finalTotal}</span>
+                        <span className="text-primary font-medium">{formatPrice(finalTotal)}</span>
                       </div>
                       <Button
                         variant="luxury"
@@ -402,7 +439,7 @@ const Checkout = () => {
                         value={formData.phone}
                         onChange={handleInputChange}
                         className="luxury-input"
-                        placeholder="+1 234 567 8900"
+                        placeholder="+91 98765 43210"
                       />
                     </div>
                   </div>
@@ -436,50 +473,55 @@ const Checkout = () => {
                       name="address"
                       value={formData.address}
                       onChange={handleInputChange}
-                      className="luxury-input min-h-[120px]"
-                      placeholder="Street address, city, state, postal code, country"
+                      className="luxury-input min-h-[100px]"
+                      placeholder="House/Flat No., Street, City, State, PIN Code"
                     />
                   </div>
                 </div>
 
                 {/* Order Summary */}
-                <div className="bg-card border border-border/50 p-6 space-y-4">
-                  <h3 className="font-serif text-lg text-foreground">
+                <div className="space-y-6 p-6 bg-card border border-border/50">
+                  <h3 className="font-serif text-xl text-foreground">
                     Order Summary
                   </h3>
-                  {items.map(item => (
-                    <div key={item.product.id} className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">
-                        {item.product.name} × {item.quantity}
-                      </span>
-                      <span className="text-foreground">
-                        ${item.product.price * item.quantity}
-                      </span>
+                  <div className="space-y-4">
+                    {items.map(item => (
+                      <div key={item.product.id} className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">
+                          {item.product.name} × {item.quantity}
+                        </span>
+                        <span className="text-foreground">
+                          {formatPrice(item.product.price * item.quantity)}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="luxury-divider !mx-0 !w-full" />
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Subtotal</span>
+                    <span className="text-foreground">{formatPrice(total)}</span>
+                  </div>
+                  {discount > 0 && (
+                    <div className="flex justify-between text-primary">
+                      <span>Discount ({appliedCoupon?.code})</span>
+                      <span>-{formatPrice(discount)}</span>
                     </div>
-                  ))}
-                  {appliedCoupon && discount > 0 && (
-                    <>
-                      <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">Subtotal</span>
-                        <span className="text-foreground">${total}</span>
-                      </div>
-                      <div className="flex justify-between text-sm text-primary">
-                        <span>Discount ({appliedCoupon.code})</span>
-                        <span>-${discount}</span>
-                      </div>
-                    </>
                   )}
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Shipping</span>
+                    <span className="text-foreground">Complimentary</span>
+                  </div>
                   <div className="luxury-divider !mx-0 !w-full" />
                   <div className="flex justify-between text-lg">
-                    <span className="text-foreground">Total</span>
-                    <span className="text-primary font-medium">${finalTotal}</span>
+                    <span className="text-foreground font-medium">Total</span>
+                    <span className="text-primary font-medium">{formatPrice(finalTotal)}</span>
                   </div>
                 </div>
 
-                <Button 
-                  type="submit" 
-                  variant="luxury" 
-                  size="luxuryLg" 
+                <Button
+                  type="submit"
+                  variant="luxury"
+                  size="luxuryLg"
                   className="w-full"
                   disabled={createOrder.isPending}
                 >

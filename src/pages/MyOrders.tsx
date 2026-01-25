@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Package, ArrowRight } from 'lucide-react';
 import Layout from '@/components/layout/Layout';
@@ -5,10 +6,47 @@ import { useUserOrders } from '@/hooks/useOrders';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { format } from 'date-fns';
+import { supabase } from '@/integrations/supabase/client';
+import { useQueryClient } from '@tanstack/react-query';
 
 const MyOrders = () => {
   const { user, isLoading: authLoading } = useAuth();
   const { data: orders, isLoading } = useUserOrders();
+  const queryClient = useQueryClient();
+
+  // Real-time subscription for order updates
+  useEffect(() => {
+    if (!user) return;
+
+    const channel = supabase
+      .channel('user-orders-realtime')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'orders',
+          filter: `user_id=eq.${user.id}`,
+        },
+        () => {
+          // Invalidate and refetch orders when any change occurs
+          queryClient.invalidateQueries({ queryKey: ['user-orders', user.id] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user, queryClient]);
+
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+      maximumFractionDigits: 0,
+    }).format(price);
+  };
 
   if (authLoading || isLoading) {
     return (
@@ -54,7 +92,7 @@ const MyOrders = () => {
               {orders.map((order) => (
                 <div
                   key={order.id}
-                  className="bg-card border border-border/50 p-6 space-y-4"
+                  className="bg-card border border-border/50 p-4 md:p-6 space-y-4"
                 >
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div>
@@ -75,7 +113,7 @@ const MyOrders = () => {
                       >
                         {order.status}
                       </span>
-                      <span className="text-primary font-medium">${order.total}</span>
+                      <span className="text-primary font-medium">{formatPrice(order.total)}</span>
                     </div>
                   </div>
 
@@ -88,7 +126,7 @@ const MyOrders = () => {
                           {item.product_name} × {item.quantity}
                         </span>
                         <span className="text-foreground">
-                          ${(item.product_price * item.quantity).toFixed(2)}
+                          {formatPrice(item.product_price * item.quantity)}
                         </span>
                       </div>
                     ))}
@@ -97,7 +135,7 @@ const MyOrders = () => {
                   {order.discount > 0 && (
                     <div className="flex justify-between text-sm text-accent">
                       <span>Discount Applied</span>
-                      <span>-${order.discount}</span>
+                      <span>-{formatPrice(order.discount)}</span>
                     </div>
                   )}
 

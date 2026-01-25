@@ -74,6 +74,7 @@ export const useAdminOrders = () => {
 
 export const useUserOrders = () => {
   const { user } = useAuth();
+  const queryClient = useQueryClient();
   
   return useQuery({
     queryKey: ['user-orders', user?.id],
@@ -134,6 +135,7 @@ export const useCreateOrder = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['orders'] });
       queryClient.invalidateQueries({ queryKey: ['user-orders'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
     },
     onError: (error: Error) => {
       toast.error('Failed to create order: ' + error.message);
@@ -157,9 +159,10 @@ export const useUpdateOrderStatus = () => {
       return data;
     },
     onSuccess: () => {
+      // Immediately invalidate all order queries for real-time sync
       queryClient.invalidateQueries({ queryKey: ['orders'] });
       queryClient.invalidateQueries({ queryKey: ['user-orders'] });
-      toast.success('Order status updated');
+      queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
     },
     onError: (error: Error) => {
       toast.error('Failed to update order: ' + error.message);

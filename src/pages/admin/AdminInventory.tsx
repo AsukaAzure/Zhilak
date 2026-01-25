@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import AdminLayout from './AdminLayout';
-import { Search, Plus, Pencil, Trash2, Upload } from 'lucide-react';
+import { Search, Plus, Pencil, Trash2, Upload, Star, Filter } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Select,
   SelectContent,
@@ -14,11 +15,11 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from '@/components/ui/sheet';
 import { useProducts, useCategories, useCreateProduct, useUpdateProduct, useDeleteProduct, useUploadProductImage } from '@/hooks/useProducts';
 import { toast } from 'sonner';
 
@@ -29,6 +30,7 @@ interface ProductFormData {
   category_id: string;
   size: string;
   in_stock: boolean;
+  featured: boolean;
   image_url: string;
 }
 
@@ -43,6 +45,7 @@ const AdminInventory = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProductId, setEditingProductId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
@@ -53,6 +56,7 @@ const AdminInventory = () => {
     category_id: '',
     size: '',
     in_stock: true,
+    featured: false,
     image_url: '',
   });
 
@@ -64,6 +68,7 @@ const AdminInventory = () => {
       category_id: '',
       size: '',
       in_stock: true,
+      featured: false,
       image_url: '',
     });
     setImageFile(null);
@@ -84,6 +89,7 @@ const AdminInventory = () => {
       category_id: product.category_id || '',
       size: product.size || '',
       in_stock: product.in_stock ?? true,
+      featured: product.featured ?? false,
       image_url: product.image_url || '',
     });
     setImagePreview(product.image_url || null);
@@ -130,10 +136,10 @@ const AdminInventory = () => {
         category_id: formData.category_id || null,
         size: formData.size.trim() || null,
         in_stock: formData.in_stock,
+        featured: formData.featured,
         image_url: imageUrl || null,
         gallery_urls: [],
         fragrance_notes: null,
-        featured: false,
       };
 
       if (editingProductId) {
@@ -162,9 +168,11 @@ const AdminInventory = () => {
     }
   };
 
-  const filteredProducts = products?.filter((product) =>
-    product.name.toLowerCase().includes(searchQuery.toLowerCase())
-  ) || [];
+  const filteredProducts = products?.filter((product) => {
+    const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCategory = categoryFilter === 'all' || product.category_id === categoryFilter;
+    return matchesSearch && matchesCategory;
+  }) || [];
 
   const getCategoryName = (categoryId: string | null) => {
     if (!categoryId) return 'Uncategorized';
@@ -172,28 +180,53 @@ const AdminInventory = () => {
     return category?.name || 'Uncategorized';
   };
 
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+      maximumFractionDigits: 0,
+    }).format(price);
+  };
+
   return (
     <AdminLayout>
-      <div className="space-y-8">
-        <div className="flex items-center justify-between">
+      <div className="space-y-6 md:space-y-8">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="font-serif text-3xl text-foreground">Inventory</h1>
-            <p className="text-muted-foreground mt-1">Manage your product catalog</p>
+            <h1 className="font-serif text-2xl md:text-3xl text-foreground">Inventory</h1>
+            <p className="text-muted-foreground mt-1 text-sm md:text-base">Manage your product catalog</p>
           </div>
-          <Button variant="luxury" onClick={openAddModal}>
+          <Button variant="luxury" onClick={openAddModal} className="w-full sm:w-auto">
             <Plus className="w-4 h-4 mr-2" />
             Add Product
           </Button>
         </div>
 
-        <div className="relative max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input
-            placeholder="Search products..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 luxury-input"
-          />
+        {/* Search and Filter */}
+        <div className="flex flex-col sm:flex-row gap-4">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              placeholder="Search products..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10 luxury-input"
+            />
+          </div>
+          <div className="w-full sm:w-48">
+            <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+              <SelectTrigger className="luxury-input">
+                <Filter className="w-4 h-4 mr-2" />
+                <SelectValue placeholder="All Categories" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Categories</SelectItem>
+                {categories?.map((category) => (
+                  <SelectItem key={category.id} value={category.id}>{category.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
         {isLoading ? (
@@ -205,7 +238,7 @@ const AdminInventory = () => {
             <p className="text-muted-foreground">No products found</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
             {filteredProducts.map((product) => (
               <div key={product.id} className="bg-card border border-border/50 overflow-hidden group">
                 <div className="aspect-[3/4] bg-secondary relative">
@@ -219,15 +252,20 @@ const AdminInventory = () => {
                       <span className="text-sm uppercase tracking-widest text-muted-foreground">Out of Stock</span>
                     </div>
                   )}
+                  {product.featured && (
+                    <div className="absolute top-2 right-2 bg-primary text-primary-foreground p-1.5 rounded">
+                      <Star className="w-3 h-3 fill-current" />
+                    </div>
+                  )}
                 </div>
                 <div className="p-4 space-y-3">
                   <div>
                     <p className="text-xs text-primary uppercase tracking-wider">{getCategoryName(product.category_id)}</p>
-                    <h3 className="font-serif text-lg text-foreground mt-1">{product.name}</h3>
+                    <h3 className="font-serif text-lg text-foreground mt-1 line-clamp-1">{product.name}</h3>
                     <p className="text-sm text-muted-foreground line-clamp-2 mt-1">{product.description}</p>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-primary font-medium">${product.price}</span>
+                    <span className="text-primary font-medium">{formatPrice(product.price)}</span>
                     {product.size && <span className="text-xs text-muted-foreground">{product.size}</span>}
                   </div>
                   <div className="flex gap-2 pt-2 border-t border-border/50">
@@ -245,123 +283,139 @@ const AdminInventory = () => {
           </div>
         )}
 
-        <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-          <DialogContent className="sm:max-w-lg bg-card border-border">
-            <DialogHeader>
-              <DialogTitle className="font-serif text-2xl">
+        {/* Responsive Sheet Modal */}
+        <Sheet open={isModalOpen} onOpenChange={setIsModalOpen}>
+          <SheetContent side="right" className="w-full sm:max-w-lg p-0 flex flex-col">
+            <SheetHeader className="p-6 pb-0">
+              <SheetTitle className="font-serif text-2xl">
                 {editingProductId ? 'Edit Product' : 'Add New Product'}
-              </DialogTitle>
-            </DialogHeader>
+              </SheetTitle>
+            </SheetHeader>
 
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="space-y-2">
-                <Label className="text-muted-foreground">Product Image</Label>
-                <div className="flex items-center gap-4">
-                  <div className="w-24 h-24 bg-secondary border border-border rounded overflow-hidden flex-shrink-0">
-                    {imagePreview ? (
-                      <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-                        <Upload className="w-6 h-6" />
-                      </div>
-                    )}
-                  </div>
-                  <div className="flex-1">
-                    <Input type="file" accept="image/*" onChange={handleImageChange} className="luxury-input" />
-                    <p className="text-xs text-muted-foreground mt-1">PNG, JPG up to 5MB</p>
+            <ScrollArea className="flex-1 px-6">
+              <form onSubmit={handleSubmit} className="space-y-6 py-6">
+                <div className="space-y-2">
+                  <Label className="text-muted-foreground">Product Image</Label>
+                  <div className="flex items-center gap-4">
+                    <div className="w-20 h-20 bg-secondary border border-border rounded overflow-hidden flex-shrink-0">
+                      {imagePreview ? (
+                        <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-muted-foreground">
+                          <Upload className="w-5 h-5" />
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <Input type="file" accept="image/*" onChange={handleImageChange} className="luxury-input" />
+                      <p className="text-xs text-muted-foreground mt-1">PNG, JPG up to 5MB</p>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="name" className="text-muted-foreground">Product Name *</Label>
-                <Input
-                  id="name"
-                  value={formData.name}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
-                  className="luxury-input"
-                  placeholder="Enter product name"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="description" className="text-muted-foreground">Description</Label>
-                <Textarea
-                  id="description"
-                  value={formData.description}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
-                  className="luxury-input min-h-[80px]"
-                  placeholder="Enter product description"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="price" className="text-muted-foreground">Price *</Label>
+                  <Label htmlFor="name" className="text-muted-foreground">Product Name *</Label>
                   <Input
-                    id="price"
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    value={formData.price}
-                    onChange={(e) => setFormData((prev) => ({ ...prev, price: e.target.value }))}
+                    id="name"
+                    value={formData.name}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
                     className="luxury-input"
-                    placeholder="0.00"
+                    placeholder="Enter product name"
                   />
                 </div>
+
                 <div className="space-y-2">
-                  <Label htmlFor="size" className="text-muted-foreground">Size</Label>
-                  <Input
-                    id="size"
-                    value={formData.size}
-                    onChange={(e) => setFormData((prev) => ({ ...prev, size: e.target.value }))}
-                    className="luxury-input"
-                    placeholder="e.g., 100ml"
+                  <Label htmlFor="description" className="text-muted-foreground">Description</Label>
+                  <Textarea
+                    id="description"
+                    value={formData.description}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
+                    className="luxury-input min-h-[80px]"
+                    placeholder="Enter product description"
                   />
                 </div>
-              </div>
 
-              <div className="space-y-2">
-                <Label className="text-muted-foreground">Category</Label>
-                <Select value={formData.category_id} onValueChange={(value) => setFormData((prev) => ({ ...prev, category_id: value }))}>
-                  <SelectTrigger className="luxury-input">
-                    <SelectValue placeholder="Select a category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categories?.map((category) => (
-                      <SelectItem key={category.id} value={category.id}>{category.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="price" className="text-muted-foreground">Price (₹) *</Label>
+                    <Input
+                      id="price"
+                      type="number"
+                      step="1"
+                      min="0"
+                      value={formData.price}
+                      onChange={(e) => setFormData((prev) => ({ ...prev, price: e.target.value }))}
+                      className="luxury-input"
+                      placeholder="0"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="size" className="text-muted-foreground">Size</Label>
+                    <Input
+                      id="size"
+                      value={formData.size}
+                      onChange={(e) => setFormData((prev) => ({ ...prev, size: e.target.value }))}
+                      className="luxury-input"
+                      placeholder="e.g., 100ml"
+                    />
+                  </div>
+                </div>
 
-              <div className="flex items-center justify-between">
-                <Label htmlFor="in_stock" className="text-muted-foreground">In Stock</Label>
-                <Switch
-                  id="in_stock"
-                  checked={formData.in_stock}
-                  onCheckedChange={(checked) => setFormData((prev) => ({ ...prev, in_stock: checked }))}
-                />
-              </div>
+                <div className="space-y-2">
+                  <Label className="text-muted-foreground">Category</Label>
+                  <Select value={formData.category_id} onValueChange={(value) => setFormData((prev) => ({ ...prev, category_id: value }))}>
+                    <SelectTrigger className="luxury-input">
+                      <SelectValue placeholder="Select a category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {categories?.map((category) => (
+                        <SelectItem key={category.id} value={category.id}>{category.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
 
-              <div className="flex gap-3 pt-4">
-                <Button type="button" variant="outline" className="flex-1" onClick={() => setIsModalOpen(false)}>Cancel</Button>
-                <Button
-                  type="submit"
-                  variant="luxury"
-                  className="flex-1"
-                  disabled={createProduct.isPending || updateProduct.isPending || uploadImage.isPending}
-                >
-                  {createProduct.isPending || updateProduct.isPending || uploadImage.isPending
-                    ? 'Saving...'
-                    : editingProductId
-                    ? 'Update Product'
-                    : 'Add Product'}
-                </Button>
-              </div>
-            </form>
-          </DialogContent>
-        </Dialog>
+                <div className="space-y-4 pt-2">
+                  <div className="flex items-center justify-between p-3 bg-secondary/30 rounded-lg">
+                    <div className="flex items-center gap-2">
+                      <Star className="w-4 h-4 text-primary" />
+                      <Label htmlFor="featured" className="text-foreground cursor-pointer">Featured Product</Label>
+                    </div>
+                    <Switch
+                      id="featured"
+                      checked={formData.featured}
+                      onCheckedChange={(checked) => setFormData((prev) => ({ ...prev, featured: checked }))}
+                    />
+                  </div>
+                  <div className="flex items-center justify-between p-3 bg-secondary/30 rounded-lg">
+                    <Label htmlFor="in_stock" className="text-foreground cursor-pointer">In Stock</Label>
+                    <Switch
+                      id="in_stock"
+                      checked={formData.in_stock}
+                      onCheckedChange={(checked) => setFormData((prev) => ({ ...prev, in_stock: checked }))}
+                    />
+                  </div>
+                </div>
+
+                <div className="flex gap-3 pt-4 pb-6">
+                  <Button type="button" variant="outline" className="flex-1" onClick={() => setIsModalOpen(false)}>Cancel</Button>
+                  <Button
+                    type="submit"
+                    variant="luxury"
+                    className="flex-1"
+                    disabled={createProduct.isPending || updateProduct.isPending || uploadImage.isPending}
+                  >
+                    {createProduct.isPending || updateProduct.isPending || uploadImage.isPending
+                      ? 'Saving...'
+                      : editingProductId
+                      ? 'Update Product'
+                      : 'Add Product'}
+                  </Button>
+                </div>
+              </form>
+            </ScrollArea>
+          </SheetContent>
+        </Sheet>
       </div>
     </AdminLayout>
   );

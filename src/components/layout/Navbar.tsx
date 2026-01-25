@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { ShoppingBag, Menu, X, User, LogOut, Package } from 'lucide-react';
+import { ShoppingBag, Menu, X, User, LogOut, Package, ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/hooks/useAuth';
@@ -11,22 +11,31 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+} from '@/components/ui/navigation-menu';
+
+const categories = [
+  { name: 'Luxury Perfumes', path: '/category/luxury-perfumes', description: 'Exclusive high-end fragrances' },
+  { name: 'Perfumes', path: '/category/perfumes', description: 'Classic signature scents' },
+  { name: 'Clothing', path: '/category/clothing', description: 'Premium apparel collection' },
+  { name: 'Accessories', path: '/category/accessories', description: 'Luxury finishing touches' },
+];
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isCategoriesOpen, setIsCategoriesOpen] = useState(false);
   const location = useLocation();
   const { items } = useCart();
   const { user, isAdmin, signOut } = useAuth();
   const cartCount = items.reduce((acc, item) => acc + item.quantity, 0);
 
-  const navLinks = [
-    { name: 'Home', path: '/' },
-    { name: 'Luxury Perfumes', path: '/category/luxury-perfumes' },
-    { name: 'Perfumes', path: '/category/perfumes' },
-    { name: 'Clothing', path: '/category/clothing' },
-    { name: 'Accessories', path: '/category/accessories' },
-    { name: 'About', path: '/about' },
-  ];
+  const isActiveCategory = categories.some(cat => location.pathname === cat.path);
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border/50">
@@ -41,20 +50,69 @@ const Navbar = () => {
 
           {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center space-x-8">
-            {navLinks.map((link) => (
-              <Link
-                key={link.path}
-                to={link.path}
-                className={cn(
-                  "text-sm uppercase tracking-[0.15em] transition-colors duration-300",
-                  location.pathname === link.path
-                    ? "text-primary"
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                {link.name}
-              </Link>
-            ))}
+            <Link
+              to="/"
+              className={cn(
+                "text-sm uppercase tracking-[0.15em] transition-colors duration-300",
+                location.pathname === '/'
+                  ? "text-primary"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              Home
+            </Link>
+
+            {/* Categories Dropdown */}
+            <NavigationMenu>
+              <NavigationMenuList>
+                <NavigationMenuItem>
+                  <NavigationMenuTrigger 
+                    className={cn(
+                      "text-sm uppercase tracking-[0.15em] transition-colors duration-300 bg-transparent hover:bg-transparent focus:bg-transparent data-[state=open]:bg-transparent",
+                      isActiveCategory
+                        ? "text-primary"
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    Categories
+                  </NavigationMenuTrigger>
+                  <NavigationMenuContent>
+                    <ul className="grid w-[400px] gap-1 p-4 bg-card border-border">
+                      {categories.map((category) => (
+                        <li key={category.path}>
+                          <NavigationMenuLink asChild>
+                            <Link
+                              to={category.path}
+                              className={cn(
+                                "block select-none rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
+                                location.pathname === category.path && "bg-accent/50"
+                              )}
+                            >
+                              <div className="text-sm font-medium leading-none mb-1">{category.name}</div>
+                              <p className="text-xs leading-snug text-muted-foreground">
+                                {category.description}
+                              </p>
+                            </Link>
+                          </NavigationMenuLink>
+                        </li>
+                      ))}
+                    </ul>
+                  </NavigationMenuContent>
+                </NavigationMenuItem>
+              </NavigationMenuList>
+            </NavigationMenu>
+
+            <Link
+              to="/about"
+              className={cn(
+                "text-sm uppercase tracking-[0.15em] transition-colors duration-300",
+                location.pathname === '/about'
+                  ? "text-primary"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              About Us
+            </Link>
           </div>
 
           {/* Right Icons */}
@@ -123,28 +181,72 @@ const Navbar = () => {
 
         {/* Mobile Menu */}
         {isMenuOpen && (
-          <div className="lg:hidden absolute top-full left-0 right-0 bg-background border-b border-border animate-fade-in">
-            <div className="flex flex-col py-6 px-6 space-y-4">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.path}
-                  to={link.path}
-                  onClick={() => setIsMenuOpen(false)}
+          <div className="lg:hidden absolute top-full left-0 right-0 bg-background border-b border-border animate-fade-in max-h-[calc(100vh-5rem)] overflow-y-auto">
+            <div className="flex flex-col py-6 px-6 space-y-2">
+              <Link
+                to="/"
+                onClick={() => setIsMenuOpen(false)}
+                className={cn(
+                  "text-sm uppercase tracking-[0.15em] py-3 transition-colors",
+                  location.pathname === '/'
+                    ? "text-primary"
+                    : "text-muted-foreground"
+                )}
+              >
+                Home
+              </Link>
+              
+              {/* Mobile Categories Accordion */}
+              <div className="space-y-1">
+                <button
+                  onClick={() => setIsCategoriesOpen(!isCategoriesOpen)}
                   className={cn(
-                    "text-sm uppercase tracking-[0.15em] py-2 transition-colors",
-                    location.pathname === link.path
-                      ? "text-primary"
-                      : "text-muted-foreground"
+                    "w-full flex items-center justify-between text-sm uppercase tracking-[0.15em] py-3 transition-colors",
+                    isActiveCategory ? "text-primary" : "text-muted-foreground"
                   )}
                 >
-                  {link.name}
-                </Link>
-              ))}
+                  Categories
+                  <ChevronDown className={cn("w-4 h-4 transition-transform", isCategoriesOpen && "rotate-180")} />
+                </button>
+                {isCategoriesOpen && (
+                  <div className="pl-4 space-y-1 border-l border-border/50 ml-2">
+                    {categories.map((category) => (
+                      <Link
+                        key={category.path}
+                        to={category.path}
+                        onClick={() => setIsMenuOpen(false)}
+                        className={cn(
+                          "block text-sm py-2 transition-colors",
+                          location.pathname === category.path
+                            ? "text-primary"
+                            : "text-muted-foreground"
+                        )}
+                      >
+                        {category.name}
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
+              
+              <Link
+                to="/about"
+                onClick={() => setIsMenuOpen(false)}
+                className={cn(
+                  "text-sm uppercase tracking-[0.15em] py-3 transition-colors",
+                  location.pathname === '/about'
+                    ? "text-primary"
+                    : "text-muted-foreground"
+                )}
+              >
+                About Us
+              </Link>
+              
               {user && (
                 <Link
                   to="/my-orders"
                   onClick={() => setIsMenuOpen(false)}
-                  className="text-sm uppercase tracking-[0.15em] py-2 text-muted-foreground"
+                  className="text-sm uppercase tracking-[0.15em] py-3 text-muted-foreground"
                 >
                   My Orders
                 </Link>

@@ -7,6 +7,14 @@ interface DbProductCardProps {
 }
 
 const DbProductCard = ({ product, index = 0 }: DbProductCardProps) => {
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+      maximumFractionDigits: 0,
+    }).format(price);
+  };
+
   const formatNotes = () => {
     if (!product.fragrance_notes) return null;
     const notes = product.fragrance_notes;
@@ -72,7 +80,7 @@ const DbProductCard = ({ product, index = 0 }: DbProductCardProps) => {
           </p>
         )}
         <div className="flex items-center justify-between">
-          <p className="text-lg text-primary font-medium">${product.price}</p>
+          <p className="text-lg text-primary font-medium">{formatPrice(product.price)}</p>
           {product.size && (
             <span className="text-xs text-muted-foreground">{product.size}</span>
           )}
