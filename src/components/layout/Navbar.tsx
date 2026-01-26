@@ -21,8 +21,8 @@ import {
 } from '@/components/ui/navigation-menu';
 
 const categories = [
-  { name: 'Luxury Perfumes', path: '/category/luxury-perfumes', description: 'Exclusive high-end fragrances' },
   { name: 'Perfumes', path: '/category/perfumes', description: 'Classic signature scents' },
+  { name: 'Luxury Perfumes', path: '/category/luxury-perfumes', description: 'Exclusive high-end fragrances' },
   { name: 'Clothing', path: '/category/clothing', description: 'Premium apparel collection' },
   { name: 'Accessories', path: '/category/accessories', description: 'Luxury finishing touches' },
 ];
@@ -44,7 +44,7 @@ const Navbar = () => {
           {/* Logo */}
           <Link to="/" className="flex items-center">
             <span className="font-serif text-2xl tracking-wider gold-gradient-text">
-              MAISON NOIR
+              ZHILAK
             </span>
           </Link>
 

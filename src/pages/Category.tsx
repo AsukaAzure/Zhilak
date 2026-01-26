@@ -15,41 +15,40 @@ const Category = () => {
   return (
     <Layout>
       {/* Header */}
-      <section className="pt-16 pb-12 lg:pt-24 lg:pb-16">
+      <section className="pt-12 pb-8 lg:pt-20 lg:pb-12">
         <div className="luxury-container">
           <div className="text-center max-w-2xl mx-auto">
-            <p className="luxury-subheading mb-4">Collection</p>
-            <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl text-foreground mb-6">
+            <p className="luxury-subheading mb-3">Collection</p>
+            <h1 className="font-serif text-3xl md:text-4xl lg:text-5xl text-foreground mb-4">
               <span className="gold-gradient-text">
                 {category?.name || categoryId?.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') || 'Products'}
               </span>
             </h1>
             {category && category.description && (
-              <p className="text-muted-foreground text-lg">
+              <p className="text-muted-foreground text-sm md:text-base">
                 {category.description}
               </p>
             )}
-            <div className="luxury-divider mt-8" />
+            <div className="luxury-divider mt-6" />
           </div>
         </div>
       </section>
 
       {/* Products Grid */}
-      <section className="pb-24 lg:pb-32">
+      <section className="pb-16 lg:pb-24">
         <div className="luxury-container">
           {isLoading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+            <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
               {[...Array(8)].map((_, i) => (
-                <div key={i} className="space-y-4">
-                  <Skeleton className="aspect-[3/4] w-full" />
-                  <Skeleton className="h-6 w-3/4" />
-                  <Skeleton className="h-4 w-full" />
-                  <Skeleton className="h-5 w-1/4" />
+                <div key={i} className="space-y-3">
+                  <Skeleton className="aspect-[4/5] w-full" />
+                  <Skeleton className="h-5 w-3/4" />
+                  <Skeleton className="h-4 w-1/4" />
                 </div>
               ))}
             </div>
           ) : products.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+            <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
               {products.map((product, index) => (
                 <DbProductCard key={product.id} product={product} index={index} />
               ))}

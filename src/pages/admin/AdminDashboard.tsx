@@ -1,5 +1,5 @@
 import AdminLayout from './AdminLayout';
-import { Users, ShoppingBag, Package, DollarSign, Tag } from 'lucide-react';
+import { Users, ShoppingBag, Package, DollarSign } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -56,43 +56,36 @@ const AdminDashboard = () => {
     { name: 'Total Users', value: stats?.userCount || 0, icon: Users, change: '' },
     { name: 'Total Orders', value: stats?.totalOrders || 0, icon: ShoppingBag, change: `${stats?.pendingOrders || 0} pending` },
     { name: 'Products', value: stats?.productCount || 0, icon: Package, change: '' },
-    { name: 'Revenue', value: `$${(stats?.totalRevenue || 0).toLocaleString()}`, icon: DollarSign, change: '' },
+    { name: 'Revenue', value: `₹${(stats?.totalRevenue || 0).toLocaleString('en-IN')}`, icon: DollarSign, change: '' },
   ];
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-    });
-  };
 
   return (
     <AdminLayout>
-      <div className="space-y-8">
+      <div className="space-y-6">
         {/* Header */}
         <div>
-          <h1 className="font-serif text-3xl text-foreground">Dashboard</h1>
-          <p className="text-muted-foreground mt-1">Welcome to Maison Noir admin panel</p>
+          <h1 className="font-serif text-2xl md:text-3xl text-foreground">Dashboard</h1>
+          <p className="text-muted-foreground mt-1 text-sm">Welcome to Zhilak admin panel</p>
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
           {statCards.map((stat) => {
             const Icon = stat.icon;
             return (
               <div
                 key={stat.name}
-                className="bg-card border border-border/50 p-6 space-y-4"
+                className="bg-card border border-border/50 p-4 md:p-6 space-y-3"
               >
                 <div className="flex items-center justify-between">
-                  <Icon className="w-5 h-5 text-primary" />
+                  <Icon className="w-4 h-4 md:w-5 md:h-5 text-primary" />
                   {stat.change && (
-                    <span className="text-xs text-muted-foreground">{stat.change}</span>
+                    <span className="text-[10px] md:text-xs text-muted-foreground">{stat.change}</span>
                   )}
                 </div>
                 <div>
-                  <p className="text-3xl font-serif text-foreground">{stat.value}</p>
-                  <p className="text-sm text-muted-foreground mt-1">{stat.name}</p>
+                  <p className="text-xl md:text-3xl font-serif text-foreground">{stat.value}</p>
+                  <p className="text-xs md:text-sm text-muted-foreground mt-1">{stat.name}</p>
                 </div>
               </div>
             );
@@ -100,26 +93,26 @@ const AdminDashboard = () => {
         </div>
 
         {/* Quick Overview */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
           {/* Recent Orders */}
-          <div className="bg-card border border-border/50 p-6">
-            <h3 className="font-serif text-xl text-foreground mb-4">Recent Orders</h3>
+          <div className="bg-card border border-border/50 p-4 md:p-6">
+            <h3 className="font-serif text-lg md:text-xl text-foreground mb-4">Recent Orders</h3>
             {stats?.recentOrders && stats.recentOrders.length > 0 ? (
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {stats.recentOrders.map((order: any) => (
                   <div
                     key={order.id}
-                    className="flex items-center justify-between py-3 border-b border-border/50 last:border-0"
+                    className="flex items-center justify-between py-2 border-b border-border/50 last:border-0"
                   >
-                    <div>
-                      <p className="text-sm text-foreground">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs md:text-sm text-foreground truncate">
                         {order.id.slice(0, 8).toUpperCase()}
                       </p>
-                      <p className="text-xs text-muted-foreground">{order.full_name}</p>
+                      <p className="text-[10px] md:text-xs text-muted-foreground truncate">{order.full_name}</p>
                     </div>
-                    <div className="text-right">
-                      <p className="text-sm text-primary">${order.total}</p>
-                      <p className="text-xs text-muted-foreground capitalize">{order.status}</p>
+                    <div className="text-right ml-2">
+                      <p className="text-xs md:text-sm text-primary">₹{Number(order.total).toLocaleString('en-IN')}</p>
+                      <p className="text-[10px] md:text-xs text-muted-foreground capitalize">{order.status}</p>
                     </div>
                   </div>
                 ))}
@@ -130,17 +123,17 @@ const AdminDashboard = () => {
           </div>
 
           {/* Out of Stock */}
-          <div className="bg-card border border-border/50 p-6">
-            <h3 className="font-serif text-xl text-foreground mb-4">Out of Stock</h3>
+          <div className="bg-card border border-border/50 p-4 md:p-6">
+            <h3 className="font-serif text-lg md:text-xl text-foreground mb-4">Out of Stock</h3>
             {stats?.lowStockProducts && stats.lowStockProducts.length > 0 ? (
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {stats.lowStockProducts.map((item: any, i: number) => (
                   <div
                     key={i}
-                    className="flex items-center justify-between py-3 border-b border-border/50 last:border-0"
+                    className="flex items-center justify-between py-2 border-b border-border/50 last:border-0"
                   >
-                    <p className="text-sm text-foreground">{item.name}</p>
-                    <span className="text-xs px-2 py-1 bg-destructive/10 text-destructive rounded">
+                    <p className="text-xs md:text-sm text-foreground truncate flex-1">{item.name}</p>
+                    <span className="text-[10px] md:text-xs px-2 py-1 bg-destructive/10 text-destructive rounded ml-2 shrink-0">
                       Out of stock
                     </span>
                   </div>
