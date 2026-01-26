@@ -20,7 +20,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet';
-import { useProducts, useCategories, useCreateProduct, useUpdateProduct, useDeleteProduct, useUploadProductImage } from '@/hooks/useProducts';
+import { useProducts, useCategories, useCreateProduct, useUpdateProduct, useDeleteProduct, useUploadProductImage, type Product } from '@/hooks/useProducts';
 import { toast } from 'sonner';
 
 interface ProductFormData {
@@ -81,7 +81,7 @@ const AdminInventory = () => {
     setIsModalOpen(true);
   };
 
-  const openEditModal = (product: any) => {
+  const openEditModal = (product: Product) => {
     setFormData({
       name: product.name,
       description: product.description || '',
@@ -408,8 +408,8 @@ const AdminInventory = () => {
                     {createProduct.isPending || updateProduct.isPending || uploadImage.isPending
                       ? 'Saving...'
                       : editingProductId
-                      ? 'Update Product'
-                      : 'Add Product'}
+                        ? 'Update Product'
+                        : 'Add Product'}
                   </Button>
                 </div>
               </form>

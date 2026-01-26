@@ -48,8 +48,12 @@ const Auth = () => {
         toast.success('Welcome back!');
         navigate('/');
       }
-    } catch (error: any) {
-      toast.error(error.message || 'Authentication failed');
+    } catch (error: unknown) {
+      let message = 'Authentication failed';
+      if (error instanceof Error) {
+        message = error.message;
+      }
+      toast.error(message);
     } finally {
       setIsLoading(false);
     }

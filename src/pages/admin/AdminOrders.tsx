@@ -1,9 +1,9 @@
 import { useEffect } from 'react';
 import AdminLayout from './AdminLayout';
-import { Search, Eye } from 'lucide-react';
+import { Search, Eye, ChevronDown, ChevronUp } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { useState } from 'react';
-import { useAdminOrders, useUpdateOrderStatus } from '@/hooks/useOrders';
+import { useAdminOrders, useUpdateOrderStatus, type Order } from '@/hooks/useOrders';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
@@ -14,6 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import OrderDetails from '@/components/admin/OrderDetails';
 
 const statusColors = {
   pending: 'bg-yellow-500/10 text-yellow-500',
@@ -83,6 +84,14 @@ const AdminOrders = () => {
     }).format(price);
   };
 
+  const handleOrderClick = (orderId: string) => {
+    if (selectedOrderId === orderId) {
+      setSelectedOrderId(null); // Toggle off if clicking the same one
+    } else {
+      setSelectedOrderId(orderId);
+    }
+  };
+
   return (
     <AdminLayout>
       <div className="space-y-6 md:space-y-8">
@@ -115,136 +124,70 @@ const AdminOrders = () => {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Orders List */}
             <div className="lg:col-span-2 space-y-4">
-              {filteredOrders.map((order) => (
-                <div
-                  key={order.id}
-                  className={`bg-card border border-border/50 p-4 md:p-6 space-y-3 md:space-y-4 hover:border-primary/30 transition-colors cursor-pointer ${
-                    selectedOrderId === order.id ? 'border-primary/50' : ''
-                  }`}
-                  onClick={() => setSelectedOrderId(order.id)}
-                >
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                    <div>
-                      <p className="font-medium text-foreground">
-                        {order.id.slice(0, 8).toUpperCase()}
-                      </p>
-                      <p className="text-sm text-muted-foreground">{order.full_name}</p>
+              {filteredOrders.map((order) => {
+                const isSelected = selectedOrderId === order.id;
+
+                return (
+                  <div key={order.id} className="group">
+                    <div
+                      className={`bg-card border border-border/50 p-4 md:p-6 space-y-3 md:space-y-4 hover:border-primary/30 transition-colors cursor-pointer ${isSelected ? 'border-primary/50' : ''
+                        }`}
+                      onClick={() => handleOrderClick(order.id)}
+                    >
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <div className="flex items-start justify-between w-full sm:w-auto">
+                          <div>
+                            <p className="font-medium text-foreground flex items-center gap-2">
+                              {order.id.slice(0, 8).toUpperCase()}
+                              <span className="lg:hidden">
+                                {isSelected ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                              </span>
+                            </p>
+                            <p className="text-sm text-muted-foreground">{order.full_name}</p>
+                          </div>
+                        </div>
+                        <span className={`text-xs px-3 py-1 rounded-full w-fit ${statusColors[order.status]}`}>
+                          {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-muted-foreground">
+                          {order.order_items?.length || 0} item(s)
+                        </span>
+                        <span className="text-primary font-medium">{formatPrice(order.total)}</span>
+                      </div>
+                      <p className="text-xs text-muted-foreground">{formatDate(order.created_at)}</p>
                     </div>
-                    <span className={`text-xs px-3 py-1 rounded-full w-fit ${statusColors[order.status]}`}>
-                      {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
-                    </span>
+
+                    {/* Mobile Expansion (Accordion) */}
+                    {isSelected && (
+                      <div className="lg:hidden mt-2 pl-4 border-l border-primary/20 bg-card border-y border-r border-border/50 p-4 animate-accordion-down">
+                        <OrderDetails
+                          order={order}
+                          onStatusChange={handleStatusChange}
+                          statusColors={statusColors}
+                          formatPrice={formatPrice}
+                        />
+                      </div>
+                    )}
                   </div>
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">
-                      {(order as any).order_items?.length || 0} item(s)
-                    </span>
-                    <span className="text-primary font-medium">{formatPrice(order.total)}</span>
-                  </div>
-                  <p className="text-xs text-muted-foreground">{formatDate(order.created_at)}</p>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
-            {/* Order Details */}
-            <div className="lg:col-span-1">
+            {/* Desktop Side Panel */}
+            <div className="hidden lg:block lg:col-span-1">
               {selectedOrder ? (
-                <div className="sticky top-8 bg-card border border-border/50 p-4 md:p-6 space-y-6">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <h3 className="font-serif text-xl text-foreground">Order Details</h3>
-                    <Select
-                      value={selectedOrder.status}
-                      onValueChange={(value: 'pending' | 'completed') =>
-                        handleStatusChange(selectedOrder.id, value)
-                      }
-                    >
-                      <SelectTrigger className={`w-full sm:w-32 ${statusColors[selectedOrder.status]}`}>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="pending">Pending</SelectItem>
-                        <SelectItem value="completed">Completed</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-4">
-                    <div>
-                      <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">
-                        Order ID
-                      </p>
-                      <p className="text-sm text-foreground font-mono">
-                        {selectedOrder.id.slice(0, 8).toUpperCase()}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">
-                        Customer
-                      </p>
-                      <p className="text-sm text-foreground">{selectedOrder.full_name}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">
-                        Email
-                      </p>
-                      <p className="text-sm text-foreground break-all">{selectedOrder.email}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">
-                        Phone
-                      </p>
-                      <p className="text-sm text-foreground">{selectedOrder.phone}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">
-                        Address
-                      </p>
-                      <p className="text-sm text-foreground">{selectedOrder.shipping_address}</p>
-                    </div>
-                  </div>
-
-                  <div className="luxury-divider !mx-0 !w-full" />
-
-                  <div>
-                    <p className="text-xs text-muted-foreground uppercase tracking-wider mb-3">
-                      Items
-                    </p>
-                    <div className="space-y-3">
-                      {(selectedOrder as any).order_items?.map((item: any, index: number) => (
-                        <div key={index} className="flex justify-between text-sm">
-                          <span className="text-muted-foreground">
-                            {item.product_name} × {item.quantity}
-                          </span>
-                          <span className="text-foreground">
-                            {formatPrice(item.product_price * item.quantity)}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="luxury-divider !mx-0 !w-full" />
-
-                  {selectedOrder.discount && selectedOrder.discount > 0 && (
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Subtotal</span>
-                      <span className="text-foreground">{formatPrice(selectedOrder.subtotal)}</span>
-                    </div>
-                  )}
-
-                  {selectedOrder.discount && selectedOrder.discount > 0 && (
-                    <div className="flex justify-between text-sm text-green-500">
-                      <span>Discount</span>
-                      <span>-{formatPrice(selectedOrder.discount)}</span>
-                    </div>
-                  )}
-
-                  <div className="flex justify-between">
-                    <span className="text-foreground font-medium">Total</span>
-                    <span className="text-primary text-lg font-medium">{formatPrice(selectedOrder.total)}</span>
-                  </div>
+                <div className="sticky top-8 bg-card border border-border/50 p-4 md:p-6">
+                  <OrderDetails
+                    order={selectedOrder}
+                    onStatusChange={handleStatusChange}
+                    statusColors={statusColors}
+                    formatPrice={formatPrice}
+                  />
                 </div>
               ) : (
-                <div className="bg-card border border-border/50 p-6 text-center">
+                <div className="bg-card border border-border/50 p-6 text-center sticky top-8">
                   <Eye className="w-8 h-8 text-muted-foreground mx-auto mb-4" />
                   <p className="text-muted-foreground text-sm">Select an order to view details</p>
                 </div>

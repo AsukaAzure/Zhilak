@@ -99,7 +99,7 @@ const AdminDashboard = () => {
             <h3 className="font-serif text-lg md:text-xl text-foreground mb-4">Recent Orders</h3>
             {stats?.recentOrders && stats.recentOrders.length > 0 ? (
               <div className="space-y-3">
-                {stats.recentOrders.map((order: any) => (
+                {stats.recentOrders.map((order: { id: string; full_name: string; total: number; status: string }) => (
                   <div
                     key={order.id}
                     className="flex items-center justify-between py-2 border-b border-border/50 last:border-0"
@@ -127,7 +127,7 @@ const AdminDashboard = () => {
             <h3 className="font-serif text-lg md:text-xl text-foreground mb-4">Out of Stock</h3>
             {stats?.lowStockProducts && stats.lowStockProducts.length > 0 ? (
               <div className="space-y-3">
-                {stats.lowStockProducts.map((item: any, i: number) => (
+                {stats.lowStockProducts.map((item: { name: string }, i: number) => (
                   <div
                     key={i}
                     className="flex items-center justify-between py-2 border-b border-border/50 last:border-0"

@@ -1,4 +1,4 @@
-import { Sparkles } from 'lucide-react';
+import { SendToBack } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 
@@ -15,16 +15,16 @@ const EmptyCategory = ({ categoryName }: EmptyCategoryProps) => {
         <div className="absolute inset-2 border border-primary/30 rounded-full" />
         <div className="absolute inset-4 border border-primary/40 rounded-full" />
         <div className="absolute inset-0 flex items-center justify-center">
-          <Sparkles className="w-12 h-12 text-primary" />
+          <SendToBack className="w-12 h-12 text-primary" />
         </div>
       </div>
-      
+
       <div className="space-y-4 max-w-md mx-auto">
         <h2 className="font-serif text-3xl text-foreground">
           <span className="gold-gradient-text">Coming Soon</span>
         </h2>
         <p className="text-muted-foreground leading-relaxed">
-          {categoryName 
+          {categoryName
             ? `Our ${categoryName} collection is being carefully curated. Be the first to discover our upcoming exclusive pieces.`
             : 'New exclusive pieces are being carefully curated for this collection. Stay tuned for something extraordinary.'}
         </p>

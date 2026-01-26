@@ -18,7 +18,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { useCoupons, useCreateCoupon, useUpdateCoupon, useDeleteCoupon } from '@/hooks/useCoupons';
+import { useCoupons, useCreateCoupon, useUpdateCoupon, useDeleteCoupon, type Coupon } from '@/hooks/useCoupons';
 import { toast } from 'sonner';
 
 interface CouponFormData {
@@ -60,7 +60,7 @@ const AdminCoupons = () => {
     setIsModalOpen(true);
   };
 
-  const openEditModal = (coupon: any) => {
+  const openEditModal = (coupon: Coupon) => {
     setFormData({
       code: coupon.code,
       discount_type: coupon.discount_type as 'percentage' | 'fixed',
@@ -188,11 +188,10 @@ const AdminCoupons = () => {
                     </td>
                     <td className="p-4">
                       <span
-                        className={`text-xs px-2 py-1 rounded-full ${
-                          coupon.is_active
-                            ? 'bg-green-500/10 text-green-500'
-                            : 'bg-muted text-muted-foreground'
-                        }`}
+                        className={`text-xs px-2 py-1 rounded-full ${coupon.is_active
+                          ? 'bg-green-500/10 text-green-500'
+                          : 'bg-muted text-muted-foreground'
+                          }`}
                       >
                         {coupon.is_active ? 'Active' : 'Inactive'}
                       </span>
@@ -314,8 +313,8 @@ const AdminCoupons = () => {
                   {createCoupon.isPending || updateCoupon.isPending
                     ? 'Saving...'
                     : editingCouponId
-                    ? 'Update Coupon'
-                    : 'Add Coupon'}
+                      ? 'Update Coupon'
+                      : 'Add Coupon'}
                 </Button>
               </div>
             </form>

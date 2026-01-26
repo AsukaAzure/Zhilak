@@ -27,7 +27,7 @@ const Checkout = () => {
   const validateCoupon = useValidateCoupon();
   const recordCouponUsage = useRecordCouponUsage();
   const { data: availableCoupons } = useCoupons();
-  
+
   const [step, setStep] = useState<'cart' | 'details' | 'confirmation'>('cart');
   const [couponCode, setCouponCode] = useState('');
   const [appliedCoupon, setAppliedCoupon] = useState<AppliedCoupon | null>(null);
@@ -65,8 +65,12 @@ const Checkout = () => {
       });
       setCouponCode('');
       toast.success(`Coupon "${coupon.code}" applied!`);
-    } catch (error: any) {
-      toast.error(error.message || 'Invalid coupon code');
+    } catch (error: unknown) {
+      let message = 'Invalid coupon code';
+      if (error instanceof Error) {
+        message = error.message;
+      }
+      toast.error(message);
     } finally {
       setIsApplyingCoupon(false);
     }
@@ -98,7 +102,7 @@ const Checkout = () => {
 
   const handleSubmitOrder = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!formData.fullName || !formData.email || !formData.phone || !formData.address) {
       toast.error('Please fill in all fields');
       return;
@@ -124,12 +128,29 @@ const Checkout = () => {
           coupon_id: appliedCoupon?.id || null,
           status: 'pending' as const,
         },
-        items: items.map(item => ({
-          product_id: item.product.id,
-          product_name: item.product.name,
-          product_price: item.product.price,
-          quantity: item.quantity,
-        })),
+        items: items.map(item => {
+          // Handle composite IDs for clothing items (e.g. "uuid-Size")
+          // We need to send the original UUID to the database
+          let productId = item.product.id;
+          let productName = item.product.name;
+
+          if (item.product.size) {
+            // Append size to name for the order record since order_items doesn't have a size column
+            productName = `${item.product.name} (${item.product.size})`;
+
+            // If the ID ends with the size suffix (added in ProductDetail.tsx), strip it to get real UUID
+            if (productId.endsWith(`-${item.product.size}`)) {
+              productId = productId.slice(0, -(item.product.size.length + 1));
+            }
+          }
+
+          return {
+            product_id: productId,
+            product_name: productName,
+            product_price: item.product.price,
+            quantity: item.quantity,
+          };
+        }),
       };
 
       const order = await createOrder.mutateAsync(orderPayload);
@@ -146,8 +167,12 @@ const Checkout = () => {
       setStep('confirmation');
       clearCart();
       toast.success('Order placed successfully!');
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to place order');
+    } catch (error: unknown) {
+      let message = 'Failed to place order';
+      if (error instanceof Error) {
+        message = error.message;
+      }
+      toast.error(message);
     }
   };
 
@@ -299,7 +324,7 @@ const Checkout = () => {
                           </div>
                         ))}
                       </div>
-                      
+
                       {/* Coupon Section */}
                       <div className="luxury-divider !mx-0 !w-full" />
                       <div className="space-y-3">
@@ -315,7 +340,7 @@ const Checkout = () => {
                                 {appliedCoupon.code}
                               </span>
                               <span className="text-xs text-muted-foreground">
-                                ({appliedCoupon.discount_type === 'percentage' 
+                                ({appliedCoupon.discount_type === 'percentage'
                                   ? `${appliedCoupon.discount_value}% off`
                                   : `${formatPrice(appliedCoupon.discount_value)} off`})
                               </span>
@@ -372,7 +397,7 @@ const Checkout = () => {
                           </div>
                         )}
                       </div>
-                      
+
                       <div className="luxury-divider !mx-0 !w-full" />
                       <div className="flex justify-between">
                         <span className="text-muted-foreground">Subtotal</span>
