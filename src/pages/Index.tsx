@@ -12,7 +12,7 @@ const Index = () => {
       <section className="py-16 lg:py-24 ">
         <div className="luxury-container">
           <div className="max-w-4xl mx-auto text-center space-y-6">
-            <p className="luxury-subheading text-xl">Our Promise</p>
+            <p className="luxury-subheading">Our Promise</p>
             <h2 className="font-serif text-3xl md:text-4xl lg:text-5xl leading-tight text-foreground/90">
               <span className="italic text-6xl md:text-7xl pr-3 font-medium gold-gradient-text">Zhilak</span>
               <span className="font-light text-2xl md:text-3xl align-middle">more than a </span>
