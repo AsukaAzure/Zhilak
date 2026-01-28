@@ -24,7 +24,7 @@ const Hero = () => {
               >
                 <div className="flex items-center justify-center gap-3">
                   <span className="w-10 h-px bg-primary/40" />
-                  <span className="luxury-subheading">Est. 2023</span>
+                  <span className="luxury-subheading">Est. 2025</span>
                   <span className="w-10 h-px bg-primary/40" />
                 </div>
 
@@ -52,10 +52,10 @@ const Hero = () => {
                   size="luxuryLg"
                   className="group min-w-[200px]"
                 >
-                  <Link to="/category/perfumes">
+                  <a href="#collections">
                     View Collections
                     <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
-                  </Link>
+                  </a>
                 </Button>
                 <Button
                   asChild

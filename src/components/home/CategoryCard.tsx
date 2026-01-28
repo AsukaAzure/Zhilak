@@ -31,7 +31,7 @@ const CategoryCard = ({ id, name, description, image, index }: CategoryCardProps
       {/* Content */}
       <div className="absolute inset-x-0 bottom-0 p-8 flex flex-col items-start gap-4">
         <div className="overflow-hidden">
-          <h3 className="font-serif text-3xl md:text-4xl text-foreground translate-y-12 group-hover:translate-y-0 transition-transform duration-700 ease-out">
+          <h3 className="font-serif text-3xl md:text-4xl text-foreground translate-y-20 group-hover:translate-y-0 transition-transform duration-700 ease-out">
             {name}
           </h3>
         </div>

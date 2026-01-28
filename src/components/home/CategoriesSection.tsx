@@ -35,7 +35,7 @@ const CategoriesSection = () => {
   }, [categories]);
 
   return (
-    <section className="py-16 lg:py-24">
+    <section id="collections" className="py-16 lg:py-24">
       <div className="luxury-container">
         {/* Section Header */}
         <div className="text-center mb-12">
