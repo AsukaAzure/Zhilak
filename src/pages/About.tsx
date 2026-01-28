@@ -3,6 +3,10 @@ import Layout from '@/components/layout/Layout';
 import { MapPin, Phone, Mail, MoveRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion, useScroll, useTransform, MotionValue } from 'framer-motion';
+import heroImg from '@/assets/hero.jpg';
+import collectionImg from '@/assets/collection.png';
+import presenceImg from '@/assets/presence.png';
+import connectImg from '@/assets/connect.png';
 
 const ScribbleUnderline = ({ className }: { className?: string }) => (
   <svg viewBox="0 0 200 20" className={cn("absolute pointer-events-none text-primary", className)} fill="none" stroke="currentColor" strokeWidth="3">
@@ -21,12 +25,13 @@ const sections = [
         <p className="mb-6">
           Founded by a visionary individual during his BCA degree, <span className="text-foreground font-medium">Zhilak</span> was born from a simple yet profound idea: to create unique, high-quality fragrances that connect people.
         </p>
-        <p>
+        <p className="hidden sm:block">
           It started with a single step—our first 10ml unisex perfume. What began as an experiment quickly captured hearts, gaining popularity for its exceptional scent profile and meticulous attention to detail.
         </p>
+        <p className="block sm:hidden">It began with a 10ml unisex perfume—simple, thoughtful, and loved from the start.</p>
       </>
     ),
-    image: "/placeholder.svg"
+    image: heroImg
   },
   {
     id: 2,
@@ -53,6 +58,7 @@ const sections = [
         </div>
       </>
     ),
+    image: collectionImg
   },
   {
     id: 3,
@@ -64,7 +70,7 @@ const sections = [
         <p className="mb-8">
           We are committed to spreading the art of perfumery. Our footprint is expanding across the region, bringing our signature scents closer to you.
         </p>
-        <div className="flex flex-wrap gap-x-6 gap-y-3 text-lg font-serif text-muted-foreground/60 leading-relaxed uppercase tracking-widest">
+        <div className="sm:flex sm:flex-wrap gap-x-6 grid grid-cols-2  sm:gap-y-3 text-lg font-serif text-muted-foreground/60 leading-relaxed uppercase tracking-widest">
           {['Udupi', 'Karkala', 'Sringeri', 'Koppa', 'Moodbidri', 'Shimoga', 'Mangalore'].map((loc) => (
             <span key={loc} className="hover:text-primary transition-colors cursor-default">
               {loc}
@@ -72,7 +78,8 @@ const sections = [
           ))}
         </div>
       </>
-    )
+    ),
+    image: presenceImg
   },
   {
     id: 4,
@@ -87,18 +94,19 @@ const sections = [
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-sm tracking-widest uppercase">
           <div>
             <h4 className="text-primary mb-2 flex items-center gap-2"><MapPin size={14} /> Location</h4>
-            <p className="text-muted-foreground">Udupi, Karnataka, India</p>
+            <p className="text-muted-foreground">Karkala, Udupi, Karnataka, India</p>
           </div>
           <div>
             <h4 className="text-primary mb-2 flex items-center gap-2"><Mail size={14} /> Contact</h4>
-            <p className="text-muted-foreground lowercase">contact@zhilak.com</p>
+            <p className="text-muted-foreground lowercase">zhilakofficial@gmail.com</p>
           </div>
         </div>
-        <button className="group flex items-center gap-4 text-2xl font-serif hover:text-primary transition-colors pt-4">
+        <a href="https://api.whatsapp.com/send?phone=919141162630" className="group flex items-center gap-4 text-2xl font-serif hover:text-primary transition-colors pt-4">
           Get in Touch <MoveRight className="group-hover:translate-x-4 transition-transform duration-500" />
-        </button>
+        </a>
       </div>
-    )
+    ),
+    image: connectImg
   }
 ];
 
