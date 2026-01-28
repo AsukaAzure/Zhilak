@@ -450,7 +450,7 @@ const Checkout = () => {
                         value={formData.fullName}
                         onChange={handleInputChange}
                         className="luxury-input"
-                        placeholder="John Doe"
+                        placeholder="username"
                       />
                     </div>
                     <div className="space-y-2">
@@ -464,7 +464,7 @@ const Checkout = () => {
                         value={formData.phone}
                         onChange={handleInputChange}
                         className="luxury-input"
-                        placeholder="+91 98765 43210"
+                        placeholder="+91 00000 00000"
                       />
                     </div>
                   </div>
@@ -479,7 +479,7 @@ const Checkout = () => {
                       value={formData.email}
                       onChange={handleInputChange}
                       className="luxury-input"
-                      placeholder="john@example.com"
+                      placeholder="user@gmail.com"
                     />
                   </div>
                 </div>
@@ -532,10 +532,6 @@ const Checkout = () => {
                       <span>-{formatPrice(discount)}</span>
                     </div>
                   )}
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Shipping</span>
-                    <span className="text-foreground">Complimentary</span>
-                  </div>
                   <div className="luxury-divider !mx-0 !w-full" />
                   <div className="flex justify-between text-lg">
                     <span className="text-foreground font-medium">Total</span>
