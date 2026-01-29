@@ -17,6 +17,7 @@ const signupSchema = z.object({
     .regex(/[A-Z]/, 'Must contain at least one uppercase letter')
     .regex(/[a-z]/, 'Must contain at least one lowercase letter')
     .regex(/[0-9]/, 'Must contain at least one number'),
+  phone: z.string().min(10, 'Phone number must be at least 10 digits'),
   confirmPassword: z.string(),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords don't match",
@@ -27,6 +28,7 @@ type SignupErrors = {
   fullName?: string;
   email?: string;
   password?: string;
+  phone?: string;
   confirmPassword?: string;
 };
 
@@ -42,6 +44,7 @@ const Auth = () => {
     email: '',
     password: '',
     fullName: '',
+    phone: '',
     confirmPassword: '',
   });
   const [errors, setErrors] = useState<SignupErrors>({});
@@ -101,7 +104,7 @@ const Auth = () => {
 
     try {
       if (mode === 'signup') {
-        const { error } = await signUp(formData.email, formData.password, formData.fullName);
+        const { error } = await signUp(formData.email, formData.password, formData.fullName, formData.phone);
         if (error) throw error;
         toast.success('Account created successfully!');
         navigate('/');
@@ -197,6 +200,27 @@ const Auth = () => {
                 <p className="text-xs text-destructive mt-1">{errors.email}</p>
               )}
             </div>
+
+            {mode === 'signup' && (
+              <div className="space-y-2">
+                <Label htmlFor="phone" className="text-muted-foreground">
+                  Phone Number
+                </Label>
+                <Input
+                  id="phone"
+                  name="phone"
+                  type="tel"
+                  value={formData.phone}
+                  onChange={handleInputChange}
+                  className={`luxury-input ${errors.phone ? 'border-destructive' : ''}`}
+                  placeholder="+91 00000 00000"
+                  required
+                />
+                {errors.phone && (
+                  <p className="text-xs text-destructive mt-1">{errors.phone}</p>
+                )}
+              </div>
+            )}
 
             <div className="space-y-2">
               <Label htmlFor="password" title={mode === 'signup' ? "Password Requirements" : ""} className="text-muted-foreground">

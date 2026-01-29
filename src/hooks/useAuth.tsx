@@ -8,7 +8,7 @@ interface AuthContextType {
   session: Session | null;
   isLoading: boolean;
   isAdmin: boolean;
-  signUp: (email: string, password: string, fullName: string) => Promise<{ error: Error | null }>;
+  signUp: (email: string, password: string, fullName: string, phone: string) => Promise<{ error: Error | null }>;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
 }
@@ -27,7 +27,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       async (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
-        
+
         if (session?.user) {
           // Check if user is admin using setTimeout to avoid deadlock
           setTimeout(async () => {
@@ -41,7 +41,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         } else {
           setIsAdmin(false);
         }
-        
+
         setIsLoading(false);
       }
     );
@@ -50,7 +50,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
-      
+
       if (session?.user) {
         db
           .from('user_roles')
@@ -61,7 +61,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             setIsAdmin(data?.role === 'admin');
           });
       }
-      
+
       setIsLoading(false);
     });
 
@@ -70,7 +70,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     };
   }, []);
 
-  const signUp = async (email: string, password: string, fullName: string) => {
+  const signUp = async (email: string, password: string, fullName: string, phone: string) => {
     const { error } = await supabase.auth.signUp({
       email,
       password,
@@ -78,6 +78,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         emailRedirectTo: window.location.origin,
         data: {
           full_name: fullName,
+          phone: phone,
         },
       },
     });
@@ -89,7 +90,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         if (user) {
           await db
             .from('profiles')
-            .update({ full_name: fullName })
+            .update({
+              full_name: fullName,
+              phone: phone,
+              email: email
+            })
             .eq('user_id', user.id);
         }
       }, 500);

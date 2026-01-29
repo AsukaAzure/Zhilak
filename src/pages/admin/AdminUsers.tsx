@@ -39,7 +39,8 @@ const AdminUsers = () => {
 
   const filteredUsers = users?.filter((user) =>
     (user.full_name?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
-    (user.email?.toLowerCase() || '').includes(searchQuery.toLowerCase())
+    (user.email?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
+    (user.phone?.toLowerCase() || '').includes(searchQuery.toLowerCase())
   ) || [];
 
   const formatDate = (dateString: string) => {
@@ -88,6 +89,7 @@ const AdminUsers = () => {
                 <tr className="border-b border-border/50">
                   <th className="text-left p-4 text-sm font-medium text-muted-foreground">Name</th>
                   <th className="text-left p-4 text-sm font-medium text-muted-foreground">Email</th>
+                  <th className="text-left p-4 text-sm font-medium text-muted-foreground">Phone</th>
                   <th className="text-left p-4 text-sm font-medium text-muted-foreground">Orders</th>
                   <th className="text-left p-4 text-sm font-medium text-muted-foreground">Joined</th>
                 </tr>
@@ -102,6 +104,7 @@ const AdminUsers = () => {
                       {user.full_name || 'Not set'}
                     </td>
                     <td className="p-4 text-sm text-muted-foreground">{user.email}</td>
+                    <td className="p-4 text-sm text-muted-foreground">{user.phone || 'Not set'}</td>
                     <td className="p-4 text-sm text-foreground">{user.orderCount}</td>
                     <td className="p-4 text-sm text-muted-foreground">
                       {formatDate(user.created_at)}
