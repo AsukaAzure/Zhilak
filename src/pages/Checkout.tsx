@@ -252,13 +252,13 @@ const Checkout = () => {
   if (step === 'confirmation') {
     return (
       <Layout>
-        <div className="luxury-container py-32">
-          <div className="max-w-lg mx-auto text-center space-y-8">
-            <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
-              <Check className="w-10 h-10 text-primary" />
+        <div className="luxury-container py-16 md:py-32">
+          <div className="max-w-lg mx-auto text-center space-y-6 md:space-y-8">
+            <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
+              <Check className="w-8 h-8 md:w-10 md:h-10 text-primary" />
             </div>
-            <div className="space-y-4">
-              <h1 className="font-serif text-4xl text-foreground">
+            <div className="space-y-3 md:space-y-4">
+              <h1 className="font-serif text-3xl md:text-4xl text-foreground">
                 Order <span className="gold-gradient-text">Confirmed</span>
               </h1>
               <p className="text-muted-foreground">
@@ -301,10 +301,10 @@ const Checkout = () => {
         </button>
       </div>
 
-      <section className="py-12 lg:py-20">
+      <section className="py-8 lg:py-20">
         <div className="luxury-container">
-          <div className="text-center mb-12">
-            <h1 className="font-serif text-4xl md:text-5xl text-foreground mb-4">
+          <div className="text-center mb-8 md:mb-12">
+            <h1 className="font-serif text-3xl md:text-5xl text-foreground mb-4">
               {step === 'cart' ? 'Your Cart' : 'Checkout'}
             </h1>
             <div className="luxury-divider" />
@@ -313,7 +313,7 @@ const Checkout = () => {
           {step === 'cart' ? (
             <>
               {items.length === 0 ? (
-                <div className="text-center py-16 space-y-6">
+                <div className="text-center py-12 md:py-16 space-y-6">
                   <p className="text-muted-foreground">Your cart is empty</p>
                   <Button asChild variant="luxuryOutline" size="luxuryLg">
                     <Link to="/">Continue Shopping</Link>
@@ -322,50 +322,53 @@ const Checkout = () => {
               ) : (
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12">
                   {/* Cart Items */}
-                  <div className="lg:col-span-2 space-y-4 md:space-y-6">
+                  <div className="lg:col-span-2 space-y-4">
                     {items.map(item => (
                       <div
                         key={item.product.id}
-                        className="flex flex-col sm:flex-row gap-4 sm:gap-6 p-4 sm:p-6 bg-card border border-border/50"
+                        className="flex gap-4 p-4 bg-card border border-border/50"
                       >
-                        <div className="w-full sm:w-24 h-40 sm:h-32 bg-secondary shrink-0">
+                        <div className="w-20 h-24 md:w-24 md:h-32 bg-secondary shrink-0">
                           <img
                             src={item.product.image}
                             alt={item.product.name}
                             className="w-full h-full object-cover"
                           />
                         </div>
-                        <div className="flex-1 space-y-2">
-                          <h3 className="font-serif text-lg text-foreground">
-                            {item.product.name}
-                          </h3>
-                          <p className="text-sm text-muted-foreground line-clamp-2">
-                            {item.product.description}
-                          </p>
-                          <p className="text-primary">{formatPrice(item.product.price)}</p>
-                        </div>
-                        <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-between">
-                          <div className="flex items-center border border-border">
+                        <div className="flex-1 min-w-0 flex flex-col justify-between">
+                          <div className="space-y-1">
+                            <h3 className="font-serif text-base md:text-lg text-foreground truncate">
+                              {item.product.name}
+                            </h3>
+                            <p className="text-xs text-muted-foreground line-clamp-1">
+                              {item.product.description}
+                            </p>
+                            <p className="text-primary text-sm md:text-base">{formatPrice(item.product.price)}</p>
+                          </div>
+
+                          <div className="flex items-center justify-between mt-2">
+                            <div className="flex items-center border border-border">
+                              <button
+                                onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
+                                className="px-2 md:px-3 py-1 text-muted-foreground hover:text-foreground"
+                              >
+                                -
+                              </button>
+                              <span className="px-2 md:px-3 text-xs md:text-sm">{item.quantity}</span>
+                              <button
+                                onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
+                                className="px-2 md:px-3 py-1 text-muted-foreground hover:text-foreground"
+                              >
+                                +
+                              </button>
+                            </div>
                             <button
-                              onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
-                              className="px-3 py-1 text-muted-foreground hover:text-foreground"
+                              onClick={() => removeFromCart(item.product.id)}
+                              className="text-muted-foreground hover:text-destructive transition-colors p-1"
                             >
-                              -
-                            </button>
-                            <span className="px-3 text-sm">{item.quantity}</span>
-                            <button
-                              onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
-                              className="px-3 py-1 text-muted-foreground hover:text-foreground"
-                            >
-                              +
+                              <Trash2 className="w-4 h-4 cursor-pointer" />
                             </button>
                           </div>
-                          <button
-                            onClick={() => removeFromCart(item.product.id)}
-                            className="text-muted-foreground hover:text-destructive transition-colors"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
                         </div>
                       </div>
                     ))}
@@ -570,24 +573,24 @@ const Checkout = () => {
                   <h3 className="font-serif text-xl text-foreground">
                     Payment Method
                   </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
                     <button
                       type="button"
                       onClick={() => setPaymentMethod('cod')}
-                      className={`flex items-center gap-4 p-4 border transition-all ${paymentMethod === 'cod'
+                      className={`flex items-center gap-3 p-3 md:gap-4 md:p-4 border transition-all ${paymentMethod === 'cod'
                         ? 'border-primary bg-primary/5'
                         : 'border-border/50 bg-card hover:border-primary/50'
                         }`}
                     >
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center ${paymentMethod === 'cod' ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground'
+                      <div className={`w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center ${paymentMethod === 'cod' ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground'
                         }`}>
-                        <Banknote className="w-5 h-5" />
+                        <Banknote className="w-4 h-4 md:w-5 md:h-5" />
                       </div>
-                      <div className="text-left">
-                        <p className="font-medium text-foreground">Cash on Delivery</p>
-                        <p className="text-xs text-muted-foreground">Pay when you receive</p>
+                      <div className="text-left flex-1 min-w-0">
+                        <p className="font-medium text-sm md:text-base text-foreground">Cash on Delivery</p>
+                        <p className="text-[10px] md:text-xs text-muted-foreground uppercase tracking-tight">Pay when you receive</p>
                       </div>
-                      <div className="ml-auto">
+                      <div className="ml-2">
                         <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${paymentMethod === 'cod' ? 'border-primary bg-primary' : 'border-muted-foreground'
                           }`}>
                           {paymentMethod === 'cod' && <Check className="w-3 h-3 text-primary-foreground" />}
@@ -598,20 +601,20 @@ const Checkout = () => {
                     <button
                       type="button"
                       onClick={() => setPaymentMethod('online')}
-                      className={`flex items-center gap-4 p-4 border transition-all ${paymentMethod === 'online'
+                      className={`flex items-center gap-3 p-3 md:gap-4 md:p-4 border transition-all ${paymentMethod === 'online'
                         ? 'border-primary bg-primary/5'
                         : 'border-border/50 bg-card hover:border-primary/50'
                         }`}
                     >
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center ${paymentMethod === 'online' ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground'
+                      <div className={`w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center ${paymentMethod === 'online' ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground'
                         }`}>
-                        <CreditCard className="w-5 h-5" />
+                        <CreditCard className="w-4 h-4 md:w-5 md:h-5" />
                       </div>
-                      <div className="text-left">
-                        <p className="font-medium text-foreground">Online Payment</p>
-                        <p className="text-xs text-muted-foreground">Cards, UPI, Netbanking</p>
+                      <div className="text-left flex-1 min-w-0">
+                        <p className="font-medium text-sm md:text-base text-foreground">Online Payment</p>
+                        <p className="text-[10px] md:text-xs text-muted-foreground uppercase tracking-tight">Cards, UPI, Netbanking</p>
                       </div>
-                      <div className="ml-auto">
+                      <div className="ml-2">
                         <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${paymentMethod === 'online' ? 'border-primary bg-primary' : 'border-muted-foreground'
                           }`}>
                           {paymentMethod === 'online' && <Check className="w-3 h-3 text-primary-foreground" />}

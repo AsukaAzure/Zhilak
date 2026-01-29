@@ -125,7 +125,7 @@ const Auth = () => {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
-      <div className="p-6">
+      <div className="p-4 md:p-6">
         <Link
           to="/"
           className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground transition-colors"
@@ -136,19 +136,19 @@ const Auth = () => {
       </div>
 
       {/* Auth Form */}
-      <div className="flex-1 flex items-center justify-center px-6 py-12">
-        <div className="w-full max-w-md space-y-8">
+      <div className="flex-1 flex items-center justify-center px-4 py-8 md:px-6 md:py-12">
+        <div className="w-full max-w-md space-y-6 md:space-y-8">
           {/* Logo */}
           <div className="text-center">
             <Link to="/" className="inline-block">
-              <span className="font-serif text-3xl tracking-wider gold-gradient-text">
+              <span className="font-serif text-2xl md:text-3xl tracking-wider gold-gradient-text">
                 ZHILAK
               </span>
             </Link>
-            <h1 className="mt-8 font-serif text-3xl text-foreground">
+            <h1 className="mt-6 md:mt-8 font-serif text-2xl md:text-3xl text-foreground">
               {mode === 'login' ? 'Welcome Back' : 'Create Account'}
             </h1>
-            <p className="mt-2 text-muted-foreground">
+            <p className="mt-2 text-sm md:text-base text-muted-foreground">
               {mode === 'login'
                 ? 'Sign in to your account'
                 : 'Join our exclusive community'}
@@ -228,13 +228,13 @@ const Auth = () => {
               {mode === 'signup' && (
                 <div className="grid grid-cols-2 gap-2 mt-3 p-3 bg-secondary/30 rounded-lg border border-border/50">
                   {getPasswordRequirements().map((req, i) => (
-                    <div key={i} className="flex items-center gap-2 text-[10px] uppercase tracking-wider">
+                    <div key={i} className="flex items-center gap-2 text-[9px] md:text-[10px] uppercase tracking-wider">
                       {req.met ? (
-                        <CheckCircle2 className="w-3 h-3 text-primary" />
+                        <CheckCircle2 className="w-3 h-3 text-primary shrink-0" />
                       ) : (
-                        <Circle className="w-3 h-3 text-muted-foreground/30" />
+                        <Circle className="w-3 h-3 text-muted-foreground/30 shrink-0" />
                       )}
-                      <span className={req.met ? 'text-primary' : 'text-muted-foreground'}>
+                      <span className={`${req.met ? 'text-primary' : 'text-muted-foreground'} truncate`}>
                         {req.label}
                       </span>
                     </div>
