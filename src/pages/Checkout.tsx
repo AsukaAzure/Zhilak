@@ -37,7 +37,10 @@ const Checkout = () => {
     fullName: '',
     email: '',
     phone: '',
-    address: '',
+    street: '',
+    city: '',
+    state: '',
+    pincode: '',
   });
   const [paymentMethod, setPaymentMethod] = useState<'cod' | 'online'>('cod');
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
@@ -167,8 +170,22 @@ const Checkout = () => {
   const handleSubmitOrder = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.fullName || !formData.email || !formData.phone || !formData.address) {
+    if (!formData.fullName || !formData.email || !formData.phone || !formData.street || !formData.city || !formData.state || !formData.pincode) {
       toast.error('Please fill in all fields');
+      return;
+    }
+
+    // Prepare regex for validation
+    const phoneRegex = /^\d{10}$/;
+    const pincodeRegex = /^\d{6}$/;
+
+    if (!phoneRegex.test(formData.phone)) {
+      toast.error('Phone number must be exactly 10 digits');
+      return;
+    }
+
+    if (!pincodeRegex.test(formData.pincode)) {
+      toast.error('PIN code must be exactly 6 digits');
       return;
     }
 
@@ -184,7 +201,7 @@ const Checkout = () => {
         full_name: formData.fullName,
         email: formData.email,
         phone: formData.phone,
-        shipping_address: formData.address,
+        shipping_address: `${formData.street}, ${formData.city}, ${formData.state} - ${formData.pincode}`,
         subtotal: total,
         discount: discount,
         total: finalTotal,
@@ -528,7 +545,8 @@ const Checkout = () => {
                         value={formData.phone}
                         onChange={handleInputChange}
                         className="luxury-input"
-                        placeholder="+91 00000 00000"
+                        placeholder="phone no"
+                        maxLength={10}
                       />
                     </div>
                   </div>
@@ -553,18 +571,62 @@ const Checkout = () => {
                   <h3 className="font-serif text-xl text-foreground">
                     Shipping Address
                   </h3>
-                  <div className="space-y-2">
-                    <Label htmlFor="address" className="text-muted-foreground">
-                      Full Address
-                    </Label>
-                    <Textarea
-                      id="address"
-                      name="address"
-                      value={formData.address}
-                      onChange={handleInputChange}
-                      className="luxury-input min-h-[100px]"
-                      placeholder="House/Flat No., Street, City, State, PIN Code"
-                    />
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="street" className="text-muted-foreground">
+                        Street Address
+                      </Label>
+                      <Input
+                        id="street"
+                        name="street"
+                        value={formData.street}
+                        onChange={handleInputChange}
+                        className="luxury-input"
+                        placeholder="House/Flat No., Street Area"
+                      />
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="city" className="text-muted-foreground">
+                          City
+                        </Label>
+                        <Input
+                          id="city"
+                          name="city"
+                          value={formData.city}
+                          onChange={handleInputChange}
+                          className="luxury-input"
+                          placeholder="City"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="state" className="text-muted-foreground">
+                          State
+                        </Label>
+                        <Input
+                          id="state"
+                          name="state"
+                          value={formData.state}
+                          onChange={handleInputChange}
+                          className="luxury-input"
+                          placeholder="State"
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="pincode" className="text-muted-foreground">
+                        PIN Code
+                      </Label>
+                      <Input
+                        id="pincode"
+                        name="pincode"
+                        value={formData.pincode}
+                        onChange={handleInputChange}
+                        className="luxury-input"
+                        placeholder="pincode"
+                        maxLength={6}
+                      />
+                    </div>
                   </div>
                 </div>
 

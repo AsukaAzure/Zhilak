@@ -26,7 +26,7 @@ const Footer = () => {
             <div className="space-y-2 text-sm text-muted-foreground">
               <div className="flex items-center gap-2 md:justify-end">
                 <MapPin className="w-4 h-4 text-primary shrink-0" />
-                <span>Shivamogga, Chikmagalur, Karnataka, India</span>
+                <span>Sringeri, chikkamagalur, Karnataka, India</span>
               </div>
               <div className="flex items-center gap-2 md:justify-end">
                 <Mail className="w-4 h-4 text-primary shrink-0" />

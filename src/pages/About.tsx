@@ -94,7 +94,7 @@ const sections = [
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-sm tracking-widest uppercase">
           <div>
             <h4 className="text-primary mb-2 flex items-center gap-2"><MapPin size={14} /> Location</h4>
-            <p className="text-muted-foreground">Karkala, Udupi, Karnataka, India</p>
+            <p className="text-muted-foreground">Sringeri, chikkamagalur, Karnataka, India</p>
           </div>
           <div>
             <h4 className="text-primary mb-2 flex items-center gap-2"><Mail size={14} /> Contact</h4>
