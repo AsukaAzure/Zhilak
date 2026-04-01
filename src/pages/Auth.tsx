@@ -40,6 +40,7 @@ const Auth = () => {
   const [mode, setMode] = useState<AuthMode>('login');
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -272,16 +273,25 @@ const Auth = () => {
                 <Label htmlFor="confirmPassword" className="text-muted-foreground">
                   Confirm Password
                 </Label>
-                <Input
-                  id="confirmPassword"
-                  name="confirmPassword"
-                  type={showPassword ? 'text' : 'password'}
-                  value={formData.confirmPassword}
-                  onChange={handleInputChange}
-                  className={`luxury-input ${errors.confirmPassword ? 'border-destructive' : ''}`}
-                  placeholder="••••••••"
-                  required
-                />
+                <div className="relative">
+                  <Input
+                    id="confirmPassword"
+                    name="confirmPassword"
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    value={formData.confirmPassword}
+                    onChange={handleInputChange}
+                    className={`luxury-input pr-10 ${errors.confirmPassword ? 'border-destructive' : ''}`}
+                    placeholder="••••••••"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  >
+                    {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
                 {errors.confirmPassword && (
                   <p className="text-xs text-destructive mt-1">{errors.confirmPassword}</p>
                 )}
