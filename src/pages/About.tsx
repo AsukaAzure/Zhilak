@@ -98,7 +98,7 @@ const sections = [
           </div>
           <div>
             <h4 className="text-primary mb-2 flex items-center gap-2"><Mail size={14} /> Contact</h4>
-            <p className="text-muted-foreground lowercase">zhilakofficial@gmail.com</p>
+            <a href="mailto:zhilakofficial@gmail.com" className="text-muted-foreground lowercase">zhilakofficial@gmail.com</a>
           </div>
         </div>
         <a href="https://api.whatsapp.com/send?phone=919141162630" target="_blank" className="group flex items-center gap-4 text-2xl font-serif hover:text-primary transition-colors pb-4">
