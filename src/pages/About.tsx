@@ -101,7 +101,7 @@ const sections = [
             <p className="text-muted-foreground lowercase">zhilakofficial@gmail.com</p>
           </div>
         </div>
-        <a href="https://api.whatsapp.com/send?phone=919141162630" className="group flex items-center gap-4 text-2xl font-serif hover:text-primary transition-colors pb-4">
+        <a href="https://api.whatsapp.com/send?phone=919141162630" target="_blank" className="group flex items-center gap-4 text-2xl font-serif hover:text-primary transition-colors pb-4">
           Get in Touch <MoveRight className="group-hover:translate-x-4 transition-transform duration-500" />
         </a>
       </div>
